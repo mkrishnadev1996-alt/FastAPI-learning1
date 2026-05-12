@@ -6,7 +6,7 @@ app =FastAPI()
 
 # Model for adding new student
 class AddStudent(BaseModel):
-    name:str = Field(...,description="Name of the student")
+    name:str = Field(...,description="Name of the student",min_length=2,max_length=50)
     age:int = Field(...,description="Age of the student", ge=5, le=18)
     student_class:int = Field(...,description="Class of the student",ge=1,le=10)
 
@@ -46,20 +46,20 @@ def index():
     return {'message':'Hello world. Refer docs at path /docs'}
 
 @app.get("/get-student-by-id/{student_id}")
-async def get_student_by_id(student_id: int = Path(..., description="Enter Id of student", gt=0, lt=10)):
+async def get_student_by_id(student_id: int = Path(..., description="Enter Id of student", gt=0, lt=50)):
     if student_id not in students:
         return {"Error":"Id not found"}
     return students[student_id]
 
 @app.get("/get-student-by-name")
-async def get_student_by_name(name : str = Query(...,description="Name of the student")):
+async def get_student_by_name(name : str = Query(...,description="Name of the student",max_length=50,min_length=2)):
     for id in students.keys():
         if students[id]["name"].lower()==name.lower() :
             return students[id]
     return {"Error":"Name not found"}
 
 @app.get("/get-students-in-class/{student_class}")
-async def get_students_in_class(student_class :StudentClass = Path(...,description="Class for which list of students are required")):
+async def get_students_in_class(student_class :StudentClass = Path(...,description="Class for which list of students are required",ge=1,le=10)):
     result = []
 
     for student in students.values():
