@@ -3,8 +3,14 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 app =FastAPI()
-class InputModel(BaseModel):
-    name:str = Field()
+
+# Model for adding new student
+class AddStudent(BaseModel):
+    name:str = Field(...,description="Name of the student")
+    age:int = Field(...,description="Age of the student", ge=5, le=18)
+    student_class:int = Field(...,description="Class of the student",ge=1,le=10)
+
+
 
 class StudentClass(int ,Enum):
     one = 1,
@@ -64,3 +70,14 @@ async def get_students_in_class(student_class :StudentClass = Path(...,descripti
         return {"Error": "No students found in this class"}
 
     return {"class":student_class,"data":result}
+
+@app.post("/add-student")
+async def add_student(student: AddStudent):
+    if student:
+        try:
+            id = max(students.keys()) + 1
+            students[id] = student.model_dump()
+            return {"Message":"Student is added"}
+        except Exception as e:
+            print(e)
+            return {"Error": e}
