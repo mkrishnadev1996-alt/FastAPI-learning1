@@ -9,9 +9,10 @@ This project is a learning-focused FastAPI application that provides a student m
 - Retrieve student by ID
 - Search student by name
 - Get students by class
+- Add new students via POST request
 - Interactive API documentation with Swagger UI
 
-**Learning objectives:** Path parameters, query parameters, Pydantic models, FastAPI enums, and automatic API documentation.
+**Learning objectives:** Path parameters, query parameters, Pydantic models, FastAPI enums, POST requests with request body validation, and automatic API documentation.
 
 ## Prerequisites
 
@@ -88,6 +89,7 @@ The `/docs` endpoint provides an interactive interface to test all API endpoints
 | `GET` | `/get-student-by-id/{student_id}` | Retrieve student by ID | Path: `student_id` (1-9) |
 | `GET` | `/get-student-by-name` | Search student by name | Query: `name` |
 | `GET` | `/get-students-in-class/{student_class}` | Get students in a class | Path: `student_class` (1-10) |
+| `POST` | `/add-student` | Add a new student | Body: `name`, `age`, `student_class` |
 
 ### Endpoint Details
 
@@ -115,7 +117,7 @@ curl http://127.0.0.1:8000/get-student-by-id/1
 ```
 
 **Path Parameter:**
-- `student_id`: Student ID (must be > 0 and < 10)
+- `student_id`: Student ID (must be > 0 and < 50)
 
 **Response (success):**
 ```json
@@ -138,7 +140,7 @@ curl http://127.0.0.1:8000/get-student-by-name?name=john
 ```
 
 **Query Parameter:**
-- `name`: Student name (case-insensitive search)
+- `name`: Student name (case-insensitive search, 2-50 characters)
 
 **Response (success):**
 ```json
@@ -173,11 +175,51 @@ curl http://127.0.0.1:8000/get-students-in-class/5
 {"Error": "No students found in this class"}
 ```
 
+---
+
+#### Add New Student
+
+Add a new student to the system.
+
+```bash
+curl -X POST http://127.0.0.1:8000/add-student \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Alice", "age": 11, "student_class": 4}'
+```
+
+**Example with all validation rules:**
+- Name: 2-50 characters
+- Age: 5-18 years
+- Class: 1-10
+
+**Request Body:**
+- `name`: Student name (string, 2-50 characters)
+- `age`: Student age (integer, 5-18)
+- `student_class`: Class number (integer, 1-10)
+
+**Response (success):**
+```json
+{"Message": "Student is added"}
+```
+
+**Response (validation error):**
+```json
+{
+  "detail": [
+    {
+      "type": "string_too_short",
+      "loc": ["body", "name"],
+      "msg": "String should have at least 2 characters"
+    }
+  ]
+}
+```
+
 ## Project Structure
 
 ```
 learning1/
-├── main.py          # FastAPI application (66 lines)
+├── main.py          # FastAPI application (83 lines)
 ├── pyproject.toml   # Project configuration
 ├── requirements.txt # Dependencies
 ├── README.md        # This file
@@ -187,21 +229,21 @@ learning1/
 ### main.py Overview
 
 - **Imports:** FastAPI, Path, Query, BaseModel, Field, Enum
-- **Data models:** `InputModel` (Pydantic), `StudentClass` (Enum)
+- **Data models:** `AddStudent` (Pydantic), `StudentClass` (Enum)
 - **Student data:** In-memory dictionary with 4 sample students
-- **Endpoints:** 4 routes demonstrating different parameter types
+- **Endpoints:** 5 routes demonstrating different parameter types and POST requests
 
 ## Learning Takeaways
 
 This project demonstrates core FastAPI concepts:
 
-1. **Path Parameters:** Strongly typed URL parameters with validation (`Path(..., gt=0, lt=10)`)
-2. **Query Parameters:** Optional/required query string parameters (`Query(...)`)
-3. **Pydantic Models:** Data validation using `BaseModel` and `Field`
+1. **Path Parameters:** Strongly typed URL parameters with validation (`Path(..., gt=0, lt=50)`)
+2. **Query Parameters:** Optional/required query string parameters with validation (`Query(..., min_length=2, max_length=50)`)
+3. **Pydantic Models:** Data validation using `BaseModel` and `Field` with validators (min_length, max_length, ge, le)
 4. **Enums:** Type-safe enum handling for constrained values
-5. **Automatic Docs:** Swagger UI and ReDoc generation
-6. **Error Handling:** Graceful error responses for missing data
-7. **FastAPI Decorators:** `@app.get()` for route definition
+5. **POST Requests:** Request body validation with `@app.post()` decorator and `model_dump()` serialization
+6. **Automatic Docs:** Swagger UI and ReDoc generation with automatic schema generation
+7. **Error Handling:** Graceful error responses for missing data and validation errors
 
 ## Example Use Cases
 

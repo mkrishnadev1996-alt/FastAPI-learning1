@@ -117,7 +117,7 @@ curl http://127.0.0.1:8000/get-student-by-id/1
 ```
 
 **Path Parameter:**
-- `student_id`: Student ID (must be > 0 and < 10)
+- `student_id`: Student ID (must be > 0 and < 50)
 
 **Response (success):**
 ```json
@@ -140,7 +140,7 @@ curl http://127.0.0.1:8000/get-student-by-name?name=john
 ```
 
 **Query Parameter:**
-- `name`: Student name (case-insensitive search)
+- `name`: Student name (case-insensitive search, 2-50 characters)
 
 **Response (success):**
 ```json
@@ -187,8 +187,13 @@ curl -X POST http://127.0.0.1:8000/add-student \
   -d '{"name": "Alice", "age": 11, "student_class": 4}'
 ```
 
+**Example with all validation rules:**
+- Name: 2-50 characters
+- Age: 5-18 years
+- Class: 1-10
+
 **Request Body:**
-- `name`: Student name (string)
+- `name`: Student name (string, 2-50 characters)
 - `age`: Student age (integer, 5-18)
 - `student_class`: Class number (integer, 1-10)
 
@@ -199,7 +204,15 @@ curl -X POST http://127.0.0.1:8000/add-student \
 
 **Response (validation error):**
 ```json
-{"detail": [...validation errors...]}
+{
+  "detail": [
+    {
+      "type": "string_too_short",
+      "loc": ["body", "name"],
+      "msg": "String should have at least 2 characters"
+    }
+  ]
+}
 ```
 
 ## Project Structure
@@ -224,13 +237,13 @@ learning1/
 
 This project demonstrates core FastAPI concepts:
 
-1. **Path Parameters:** Strongly typed URL parameters with validation (`Path(..., gt=0, lt=10)`)
-2. **Query Parameters:** Optional/required query string parameters (`Query(...)`)
-3. **Pydantic Models:** Data validation using `BaseModel` and `Field`
+1. **Path Parameters:** Strongly typed URL parameters with validation (`Path(..., gt=0, lt=50)`)
+2. **Query Parameters:** Optional/required query string parameters with validation (`Query(..., min_length=2, max_length=50)`)
+3. **Pydantic Models:** Data validation using `BaseModel` and `Field` with validators (min_length, max_length, ge, le)
 4. **Enums:** Type-safe enum handling for constrained values
-5. **POST Requests:** Request body validation with `@app.post()` decorator
-6. **Automatic Docs:** Swagger UI and ReDoc generation
-7. **Error Handling:** Graceful error responses for missing data
+5. **POST Requests:** Request body validation with `@app.post()` decorator and `model_dump()` serialization
+6. **Automatic Docs:** Swagger UI and ReDoc generation with automatic schema generation
+7. **Error Handling:** Graceful error responses for missing data and validation errors
 
 ## Example Use Cases
 
