@@ -24,7 +24,7 @@ This project is a learning-focused FastAPI application that provides a student m
 ### Step 1: Clone the project
 
 ```bash
-cd C:\Users\VamsiAD\Dev\FastAPI\learning1
+git clone https://github.com/mkrishnadev1996-alt/FastAPI-learning1.git
 ```
 
 ### Step 2: Install dependencies
